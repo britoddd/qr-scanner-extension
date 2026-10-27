@@ -30,6 +30,7 @@ lib/jsQR.LICENSE Its license; Apache-2.0 requires shipping it
 test.mjs         Automated check of content.js in headless Chrome (not shipped)
 test.html        Manual test page with sample QR codes (not shipped)
 SETUP.md         User-facing install/test steps (not shipped)
+README.md        Project overview (not shipped)
 ```
 
 Flow:
