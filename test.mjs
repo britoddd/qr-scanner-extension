@@ -75,7 +75,13 @@ async function checks() {
   shot(null);
   await drag(300, 300, 400, 400);
   check('no QR -> message + Okay', popup() === 'No QR code found,Okay', popup());
-  key('Escape');
+  const p = ui().querySelector('.pop');
+  check('popup bottom-right at release point',
+    parseFloat(p.style.left) + p.offsetWidth === 400 && parseFloat(p.style.top) + p.offsetHeight === 400, p.style.cssText);
+  ui().querySelector('.val').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  check('press inside popup keeps it', !!ui());
+  ui().elementFromPoint(5, 5)?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  check('press outside popup closes it', !ui());
 
   shot(null);
   await drag(200, 200, 202, 201);

@@ -57,7 +57,9 @@ Claude has already checked the selection, decoding, and popup logic automaticall
 - [ ] Drag over an area with no QR → "No QR code found" with a tip below + **Okay**
 - [ ] With Windows in dark mode (Settings → Personalization → Colors), the popup is dark too
 - [ ] Inverted QR (light on dark) → decodes
+- [ ] The popup opens up-left of where you released, with its button right next to the cursor
 - [ ] Escape while dragging cancels; Escape on the popup closes it
+- [ ] Clicking anywhere outside the popup closes it without clicking whatever is underneath
 - [ ] Pressing the shortcut several times in a row doesn't stack overlays
 - [ ] Still works at 150% page zoom (Ctrl + `+`)
 
