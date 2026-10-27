@@ -30,6 +30,7 @@ content.js       Overlay, drag selection, crop, decode, popup, keyboard handling
 lib/jsQR.js      Vendored jsQR 1.4.0 (Apache-2.0, sha512-verified from npm) — the only third-party code
 lib/jsQR.LICENSE Its license; Apache-2.0 requires shipping it
 test.mjs         Automated check of content.js in headless Chrome (not shipped)
+qrcode_www.youtube.com.png  Dot-style QR fixture used by test.mjs (not shipped)
 test.html        Manual test page with sample QR codes (not shipped)
 SETUP.md         User-facing install/test steps (not shipped)
 README.md        Project overview (not shipped)
@@ -49,6 +50,7 @@ Permissions: `activeTab` + `scripting` only. `activeTab` is granted when the use
 - **Decoder is jsQR, not `BarcodeDetector`.** The native `BarcodeDetector` API is not available in desktop Chrome/Edge on Windows or Linux. MV3 forbids remotely hosted code, so jsQR must be vendored into `lib/`, never loaded from a CDN.
 - **Crop scale:** compute `scale = screenshotImage.width / window.innerWidth`, not `devicePixelRatio` alone; this also stays correct under browser zoom. Multiply the selection rect (client coords) by `scale` before cropping.
 - **Crop margin:** the crop is expanded by 10% of the selection on each side, using real screenshot pixels, so a drag that clips the code's edge still decodes. Measured: jsQR needs no quiet zone at ≥2 device px per module and fails only at 1px/module, so no white padding or upscaling. `inversionAttempts: 'attemptBoth'` handles light-on-dark codes.
+- **Downscale retry:** dot-style "designer" codes (round modules) fail at full size, because the dots don't touch and jsQR needs solid runs. The fixture fails natively at ≥350px. If the full-size decode fails, `scan()` retries with the longest side at 300px, then 200px; shrinking blurs the dots into blocks. A 200px retry decoded the fixture at every size from 100 to 2400px. Codes that decode at full size never reach the retries.
 - **Re-injection:** the shortcut can be pressed repeatedly on the same tab, re-running `content.js`. The whole file is an IIFE that returns early if `window.__qrScan` exists (top-level `let` would throw on the second run). `__qrScan` tears down any existing overlay/popup first, and the async decode checks `shade.isConnected` so a stale scan can't attach to a new session.
 - **Viewport size:** clamp the popup using the fixed full-viewport shade's `clientWidth/Height`, not `document.documentElement.client*`, which is wrong on quirks-mode pages.
 - **Isolation from the page:** render overlay and popup inside a Shadow DOM host with `z-index: 2147483647` and `all: initial` so page CSS can't break it.
