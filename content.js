@@ -10,10 +10,11 @@
     .hint { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); padding: 8px 14px; border-radius: 999px;
             background: rgba(32, 33, 36, .92); color: #fff; font: 13px/1.4 system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
     kbd { padding: 0 6px; border: 1px solid rgba(255, 255, 255, .4); border-radius: 4px; font: inherit; }
+    .catch { position: fixed; inset: 0; }
     .pop { --bg: #fff; --fg: #202124; --muted: #5f6368; --accent: #1a73e8; --on-accent: #fff; --ring: rgba(0, 0, 0, .08);
            position: fixed; display: flex; flex-direction: column; gap: 6px; min-width: 240px; max-width: 360px; padding: 14px 16px;
            background: var(--bg); color: var(--fg); border-radius: 12px; box-shadow: 0 8px 28px rgba(0, 0, 0, .3), 0 0 0 1px var(--ring);
-           font: 14px/1.45 system-ui, sans-serif; color-scheme: light; animation: pop .14s ease-out; }
+           font: 14px/1.45 system-ui, sans-serif; color-scheme: light; animation: pop .14s ease-out; transform-origin: bottom right; }
     @media (prefers-color-scheme: dark) {
       .pop { --bg: #292a2d; --fg: #e8eaed; --muted: #9aa0a6; --accent: #8ab4f8; --on-accent: #202124; --ring: rgba(255, 255, 255, .12);
              color-scheme: dark; }
@@ -82,6 +83,8 @@
       if (u.protocol === 'http:' || u.protocol === 'https:') url = u; // never javascript:, data:, etc.
     } catch {}
 
+    // Covers the page behind the popup: a press anywhere else closes it, and that press doesn't reach the page.
+    el('div', 'catch', root).onpointerdown = teardown;
     const pop = el('div', 'pop', root);
     pop.setAttribute('role', 'dialog');
     pop.setAttribute('aria-label', 'QR code');
@@ -101,8 +104,9 @@
       teardown();
     };
 
-    pop.style.left = Math.max(8, Math.min(x, vw - pop.offsetWidth - 8)) + 'px';
-    pop.style.top = Math.max(8, Math.min(y, vh - pop.offsetHeight - 8)) + 'px';
+    // Bottom-right corner at the release point, so the button lands right next to the cursor.
+    pop.style.left = Math.max(8, Math.min(x - pop.offsetWidth, vw - pop.offsetWidth - 8)) + 'px';
+    pop.style.top = Math.max(8, Math.min(y - pop.offsetHeight, vh - pop.offsetHeight - 8)) + 'px';
     btn.focus();
   }
 
