@@ -50,10 +50,12 @@ Open `test.html` from this folder (it needs internet, since it loads a QR genera
 
 Claude has already checked the selection, decoding, and popup logic automatically (`node test.mjs`). This manual pass checks what only a real browser can: the shortcut, the screen capture, and how it looks.
 
-- [ ] QR containing a web link → popup shows the link, button says **Open**, Enter opens it in a new tab
+- [ ] Overlay shows a "Drag over a QR code · Esc to cancel" pill at the top; it disappears once you start dragging
+- [ ] QR containing a web link → popup labeled "LINK · *domain*" shows the link, button says **Open**, Enter opens it in a new tab
 - [ ] QR containing plain text → button says **Okay**, Enter closes the popup
 - [ ] QR containing a `javascript:` link → button says **Okay** (it must not run)
-- [ ] Drag over an area with no QR → "No QR code found" + **Okay**
+- [ ] Drag over an area with no QR → "No QR code found" with a tip below + **Okay**
+- [ ] With Windows in dark mode (Settings → Personalization → Colors), the popup is dark too
 - [ ] Inverted QR (light on dark) → decodes
 - [ ] Escape while dragging cancels; Escape on the popup closes it
 - [ ] Pressing the shortcut several times in a row doesn't stack overlays
