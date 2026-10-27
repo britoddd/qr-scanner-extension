@@ -1,0 +1,35 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>QR scanner test page</title>
+<style>
+  body { font: 16px/1.5 system-ui, sans-serif; margin: 32px; }
+  main { display: flex; flex-wrap: wrap; gap: 48px; align-items: end; }
+  figure { margin: 0; }
+  figcaption { font-size: 13px; max-width: 220px; white-space: pre-line; }
+  .inverted svg { filter: invert(1); }
+</style>
+<p>Press <b>Alt+Shift+Q</b>, drag over a code, check the popup against the caption. Also drag over this text (expect "No QR code found").</p>
+<main></main>
+<!-- Test page only, not shipped with the extension. -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script>
+  const cases = [
+    // [value, expected, cell px, class]
+    ['https://example.com', 'Open → example.com in a new tab', 5],
+    ['Hello from the QR test page', 'Okay', 5],
+    ['javascript:alert(1)', 'Okay (must NOT run)', 5],
+    ['WIFI:S:MyNetwork;T:WPA;P:secret;;', 'Okay', 5],
+    ['https://example.com/inverted', 'Open (light on dark)', 5, 'inverted'],
+    ['https://example.com/small', 'Open (small code)', 2],
+  ];
+  for (const [value, expected, cell, cls = ''] of cases) {
+    const qr = qrcode(0, 'M');
+    qr.addData(value);
+    qr.make();
+    const fig = document.createElement('figure');
+    fig.className = cls;
+    fig.innerHTML = qr.createSvgTag(cell);
+    fig.append(Object.assign(document.createElement('figcaption'), { textContent: `${value}\nExpect: ${expected}` }));
+    document.querySelector('main').append(fig);
+  }
+</script>
