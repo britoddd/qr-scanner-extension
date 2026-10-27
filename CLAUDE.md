@@ -9,7 +9,7 @@ Targets Chromium browsers only: Chrome, Edge, Brave, Opera, Vivaldi. One codebas
 1. User presses the shortcut (default `Alt+Shift+Q`, rebindable at `chrome://extensions/shortcuts` / `edge://extensions/shortcuts`).
 2. The page is "frozen": a full-viewport overlay appears with a dim tint and a `crosshair` (+) cursor. A hint pill at the top ("Drag over a QR code · Esc to cancel") disappears on the first press. Page scroll is blocked while selecting.
 3. User drags a rectangle; the selection is drawn live. A click without a meaningful drag (< ~5px) cancels.
-4. On mouse release, the selected region is decoded and a popup appears **at the release point** (clamped to stay inside the viewport).
+4. On mouse release, the selected region is decoded and a popup appears **up-left of the release point**: its bottom-right corner sits at the cursor, so the button is right next to it (clamped to stay inside the viewport).
 5. Popup content:
    - A small label: "Link · *host*" (host shown as punycode, so lookalike domains stand out) or "Text".
    - Decoded value as selectable text.
@@ -17,7 +17,7 @@ Targets Chromium browsers only: Chrome, Edge, Brave, Opera, Vivaldi. One codebas
    - Anything else (plain text, Wi-Fi config, `mailto:`, `javascript:`, etc.) → button **"Okay"** (closes popup).
    - No QR found → message "No QR code found", a recovery tip (drag around the whole code, zoom in if small) + **"Okay"**.
    - Follows the OS light/dark theme; entrance animations are skipped under `prefers-reduced-motion`.
-6. **Enter** triggers the popup's button action (open or close). **Escape** cancels selection or closes the popup at any stage.
+6. **Enter** triggers the popup's button action (open or close). **Escape** cancels selection or closes the popup at any stage. A press anywhere outside the popup closes it; a transparent layer behind the popup swallows that press so it doesn't also click the page.
 
 ## Architecture
 
