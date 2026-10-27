@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "QR Region Scanner",
+  "version": "0.1.0",
+  "version_name": "0.1.0 alpha",
+  "description": "Drag a box over a QR code on any webpage to read it.",
+  "permissions": ["activeTab", "scripting"],
+  "background": { "service_worker": "background.js" },
+  "commands": {
+    "scan": {
+      "suggested_key": { "default": "Alt+Shift+Q" },
+      "description": "Scan a QR code in a selected area"
+    }
+  }
+}
