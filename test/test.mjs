@@ -1,4 +1,4 @@
-// Headless-Chrome check for content.js: selection, crop, decode, popup, keyboard. Run: node test.mjs
+// Headless-Chrome check for content.js: selection, crop, decode, popup, keyboard. Run: node test/test.mjs
 // Needs Chrome (CHROME=<path> to override) and internet (fetches the QR generator).
 // Doesn't cover the extension wiring (shortcut, captureVisibleTab, injection); that's the manual pass in SETUP.md.
 import { spawn } from 'node:child_process';
@@ -138,8 +138,8 @@ try {
   await evaluate(await (await fetch('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js')).text());
   const fixture = 'data:image/png;base64,' + readFileSync(new URL('qrcode_www.youtube.com.png', import.meta.url)).toString('base64');
   await evaluate(`window.fixture = new Image(); window.fixture.src = ${JSON.stringify(fixture)}; window.fixture.decode()`);
-  await evaluate(readFileSync(new URL('lib/jsQR.js', import.meta.url), 'utf8'));
-  await evaluate(readFileSync(new URL('content.js', import.meta.url), 'utf8'));
+  await evaluate(readFileSync(new URL('../lib/jsQR.js', import.meta.url), 'utf8'));
+  await evaluate(readFileSync(new URL('../content.js', import.meta.url), 'utf8'));
 
   let failed = 0;
   for (const dpr of [1, 2]) {

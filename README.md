@@ -42,11 +42,11 @@ If the shortcut shows as unassigned, another extension already uses it, so pick 
 | `background.js` | On shortcut: captures the visible tab, injects the scanner |
 | `content.js` | Overlay, drag selection, crop, decode, popup, keys |
 | `lib/jsQR.js` | Vendored QR decoder |
-| `test.mjs` | Automated check of `content.js` in headless Chrome |
-| `test.html` | Manual test page with sample QR codes |
+| `test/test.mjs` | Automated check of `content.js` in headless Chrome |
+| `test/test.html` | Manual test page with sample QR codes |
 
 ```sh
-node test.mjs   # needs Chrome + internet; exits 1 on failure
+node test/test.mjs   # needs Chrome + internet; exits 1 on failure
 ```
 
 After changing code, click reload on the extension card, then reload the tab you're testing.

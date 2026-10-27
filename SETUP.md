@@ -46,9 +46,9 @@ If something breaks, copy the error text to Claude from:
 
 ## Test checklist
 
-Open `test.html` from this folder (it needs internet, since it loads a QR generator to draw the codes). It's opened as a local file, so first go to the extension card, choose **Details**, and turn on **Allow access to file URLs** (one time only).
+Open `test/test.html` (it needs internet, since it loads a QR generator to draw the codes). It's opened as a local file, so first go to the extension card, choose **Details**, and turn on **Allow access to file URLs** (one time only).
 
-Claude has already checked the selection, decoding, and popup logic automatically (`node test.mjs`). This manual pass checks what only a real browser can: the shortcut, the screen capture, and how it looks.
+Claude has already checked the selection, decoding, and popup logic automatically (`node test/test.mjs`). This manual pass checks what only a real browser can: the shortcut, the screen capture, and how it looks.
 
 - [ ] Overlay shows a "Drag over a QR code · Esc to cancel" pill at the top; it disappears once you start dragging
 - [ ] QR containing a web link → popup labeled "LINK · *domain*" shows the link, button says **Open**, Enter opens it in a new tab
