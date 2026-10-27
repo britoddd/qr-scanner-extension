@@ -5,13 +5,32 @@
   const CSS = `
     .shade { position: fixed; inset: 0; overflow: hidden; cursor: crosshair; user-select: none; touch-action: none; outline: none; }
     .shade img { position: absolute; left: 0; top: 0; width: 100vw; height: 100vh; pointer-events: none; }
-    .box { position: absolute; left: -9px; top: -9px; outline: 1px solid #fff; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .4); }
-    .pop { position: fixed; display: flex; flex-direction: column; gap: 10px; min-width: 220px; max-width: 360px; padding: 12px;
-           background: #fff; color: #202124; border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, .3);
-           font: 14px/1.4 system-ui, sans-serif; }
+    .box { position: absolute; left: -9px; top: -9px; outline: 2px solid #fff; box-shadow: 0 0 0 9999px rgba(0, 0, 0, .45);
+           animation: fade .15s ease-out; }
+    .hint { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); padding: 8px 14px; border-radius: 999px;
+            background: rgba(32, 33, 36, .92); color: #fff; font: 13px/1.4 system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
+    kbd { padding: 0 6px; border: 1px solid rgba(255, 255, 255, .4); border-radius: 4px; font: inherit; }
+    .pop { --bg: #fff; --fg: #202124; --muted: #5f6368; --accent: #1a73e8; --on-accent: #fff; --ring: rgba(0, 0, 0, .08);
+           position: fixed; display: flex; flex-direction: column; gap: 6px; min-width: 240px; max-width: 360px; padding: 14px 16px;
+           background: var(--bg); color: var(--fg); border-radius: 12px; box-shadow: 0 8px 28px rgba(0, 0, 0, .3), 0 0 0 1px var(--ring);
+           font: 14px/1.45 system-ui, sans-serif; color-scheme: light; animation: pop .14s ease-out; }
+    @media (prefers-color-scheme: dark) {
+      .pop { --bg: #292a2d; --fg: #e8eaed; --muted: #9aa0a6; --accent: #8ab4f8; --on-accent: #202124; --ring: rgba(255, 255, 255, .12);
+             color-scheme: dark; }
+    }
+    .lbl { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+    .lbl b { color: var(--fg); letter-spacing: normal; text-transform: none; }
     .val { max-height: 200px; overflow: auto; white-space: pre-wrap; word-break: break-all; user-select: text; }
-    button { align-self: flex-end; padding: 6px 16px; border: 0; border-radius: 6px;
-             background: #1a73e8; color: #fff; font: inherit; cursor: pointer; }
+    .none { font-weight: 600; }
+    .note { color: var(--muted); font-size: 13px; }
+    button { align-self: flex-end; margin-top: 6px; padding: 7px 18px; border: 0; border-radius: 8px;
+             background: var(--accent); color: var(--on-accent); font: 500 14px/1.4 system-ui, sans-serif; cursor: pointer; transition: filter .15s; }
+    button:hover { filter: brightness(.92); }
+    button:active { filter: brightness(.84); }
+    button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+    @keyframes fade { from { opacity: 0; } }
+    @keyframes pop { from { opacity: 0; transform: translateY(4px) scale(.98); } }
+    @media (prefers-reduced-motion: reduce) { .box, .pop { animation: none; } }
   `;
 
   let host = null; // UI root element while active, null when idle
@@ -51,17 +70,25 @@
     let url = null;
     try {
       const u = new URL(text);
-      if (u.protocol === 'http:' || u.protocol === 'https:') url = u.href; // never javascript:, data:, etc.
+      if (u.protocol === 'http:' || u.protocol === 'https:') url = u; // never javascript:, data:, etc.
     } catch {}
 
     const pop = el('div', 'pop', root);
     pop.setAttribute('role', 'dialog');
     pop.setAttribute('aria-label', 'QR code');
-    el('div', 'val', pop).textContent = text ?? 'No QR code found'; // textContent: QR data is untrusted
+    pop.setAttribute('aria-describedby', 'val note'); // screen readers read the result when the button takes focus
+    if (text !== null) {
+      const lbl = el('div', 'lbl', pop);
+      lbl.textContent = url ? 'Link · ' : 'Text';
+      if (url) el('b', '', lbl).textContent = url.host; // punycode, so lookalike domains stand out
+    }
+    // textContent: QR data is untrusted
+    Object.assign(el('div', text === null ? 'val none' : 'val', pop), { id: 'val', textContent: text ?? 'No QR code found' });
+    if (text === null) Object.assign(el('div', 'note', pop), { id: 'note', textContent: 'Drag around the whole code. If it’s small, zoom in first.' });
     const btn = el('button', '', pop);
     btn.textContent = url ? 'Open' : 'Okay';
     btn.onclick = act = () => {
-      if (url) window.open(url, '_blank', 'noopener,noreferrer');
+      if (url) window.open(url.href, '_blank', 'noopener,noreferrer');
       teardown();
     };
 
@@ -80,6 +107,10 @@
     const img = el('img', '', shade); // the frozen frame: what the user sees is exactly what gets decoded
     img.src = shot;
     const box = el('div', 'box', shade);
+    const hint = el('div', 'hint', shade);
+    hint.textContent = 'Drag over a QR code · ';
+    el('kbd', '', hint).textContent = 'Esc';
+    hint.append(' to cancel');
     document.documentElement.append(host);
     addEventListener('keydown', onKey, true);
     shade.tabIndex = -1;
@@ -94,6 +125,7 @@
     shade.onwheel = (e) => e.preventDefault();
     shade.onpointerdown = (e) => {
       if (e.button !== 0) return;
+      hint.remove(); // out of the way once the user knows what to do
       x0 = e.clientX;
       y0 = e.clientY;
       shade.setPointerCapture(e.pointerId);
