@@ -1,4 +1,4 @@
-// Headless-Chrome check for content.js: selection, crop, decode, popup, keyboard. Run: node test.mjs
+// Headless-Chrome check for content.js: selection, crop, decode, popup, keyboard. Run: node test/test.mjs
 // Needs Chrome (CHROME=<path> to override) and internet (fetches the QR generator).
 // Doesn't cover the extension wiring (shortcut, captureVisibleTab, injection); that's the manual pass in SETUP.md.
 import { spawn } from 'node:child_process';
@@ -16,7 +16,8 @@ async function checks() {
   const check = (name, ok, got) => out.push(`${ok ? 'PASS' : 'FAIL'} ${name}${ok ? '' : ' -> got ' + JSON.stringify(got)}`);
 
   // Fake captureVisibleTab: viewport-sized PNG at device resolution with a QR at (qx, qy) CSS px. Starts a scan.
-  const shot = (value, qx, qy, invert = false) => {
+  // value: text to encode, or an image drawn at px × px.
+  const shot = (value, qx, qy, invert = false, px = 0) => {
     const d = devicePixelRatio, cell = 4, c = document.createElement('canvas');
     c.width = innerWidth * d;
     c.height = innerHeight * d;
@@ -24,7 +25,10 @@ async function checks() {
     g.fillStyle = invert ? '#222' : '#fff';
     g.fillRect(0, 0, c.width, c.height);
     let size = 0;
-    if (value) {
+    if (value instanceof HTMLImageElement) {
+      size = px;
+      g.drawImage(value, qx * d, qy * d, px * d, px * d);
+    } else if (value) {
       const qr = qrcode(0, 'M');
       qr.addData(value);
       qr.make();
@@ -71,6 +75,12 @@ async function checks() {
   check('inverted -> Open', popup() === 'https://example.com/inv,Open', popup());
   ui().querySelector('button').click();
   check('button click opens and closes', window.opened?.[0] === 'https://example.com/inv' && !ui(), window.opened);
+
+  // Dot-style code (round modules): at this size the dots don't touch, so it only decodes after downscaling.
+  size = shot(window.fixture, qx, qy, false, 600);
+  await drag(qx - 10, qy - 10, qx + size + 10, qy + size + 10);
+  check('large dot-style code -> Open', popup() === 'https://www.youtube.com/watch?v=o-wv_szZ0V0&t=1226s,Open', popup());
+  key('Escape');
 
   shot(null);
   await drag(300, 300, 400, 400);
@@ -132,8 +142,10 @@ try {
   await evaluate(`Element.prototype.attachShadow = ((orig) => function (o) { return orig.call(this, { ...o, mode: 'open' }); })(Element.prototype.attachShadow);
     window.opened = null; window.open = (...a) => { window.opened = a; };`);
   await evaluate(await (await fetch('https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js')).text());
-  await evaluate(readFileSync(new URL('lib/jsQR.js', import.meta.url), 'utf8'));
-  await evaluate(readFileSync(new URL('content.js', import.meta.url), 'utf8'));
+  const fixture = 'data:image/png;base64,' + readFileSync(new URL('qrcode_www.youtube.com.png', import.meta.url)).toString('base64');
+  await evaluate(`window.fixture = new Image(); window.fixture.src = ${JSON.stringify(fixture)}; window.fixture.decode()`);
+  await evaluate(readFileSync(new URL('../lib/jsQR.js', import.meta.url), 'utf8'));
+  await evaluate(readFileSync(new URL('../content.js', import.meta.url), 'utf8'));
 
   let failed = 0;
   for (const dpr of [1, 2]) {

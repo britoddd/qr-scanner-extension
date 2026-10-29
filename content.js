@@ -61,9 +61,18 @@
     const y = Math.max(0, Math.round((r.y - m) * s));
     const w = Math.min(img.naturalWidth, Math.round((r.x + r.w + m) * s)) - x;
     const h = Math.min(img.naturalHeight, Math.round((r.y + r.h + m) * s)) - y;
-    const ctx = Object.assign(document.createElement('canvas'), { width: w, height: h }).getContext('2d');
-    ctx.drawImage(img, x, y, w, h, 0, 0, w, h);
-    return jsQR(ctx.getImageData(0, 0, w, h).data, w, h, { inversionAttempts: 'attemptBoth' })?.data ?? null;
+    // Full size first. If that fails, retry smaller: shrinking blurs dot-style modules (round "designer" codes)
+    // back into solid blocks, which jsQR needs. Measured on a dot-style code: 200px decodes it at 100–2400px.
+    for (const k of [1, 300 / Math.max(w, h), 200 / Math.max(w, h)]) {
+      if (k > 1) continue; // already smaller than this target
+      const cw = Math.round(w * k), ch = Math.round(h * k);
+      const ctx = Object.assign(document.createElement('canvas'), { width: cw, height: ch }).getContext('2d');
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(img, x, y, w, h, 0, 0, cw, ch);
+      const code = jsQR(ctx.getImageData(0, 0, cw, ch).data, cw, ch, { inversionAttempts: 'attemptBoth' });
+      if (code) return code.data;
+    }
+    return null;
   }
 
   // (x, y): release point. (vw, vh): viewport size without scrollbars.

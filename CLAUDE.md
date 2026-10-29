@@ -29,8 +29,10 @@ background.js    Service worker: handles the shortcut, captures the tab, injects
 content.js       Overlay, drag selection, crop, decode, popup, keyboard handling
 lib/jsQR.js      Vendored jsQR 1.4.0 (Apache-2.0, sha512-verified from npm) — the only third-party code
 lib/jsQR.LICENSE Its license; Apache-2.0 requires shipping it
-test.mjs         Automated check of content.js in headless Chrome (not shipped)
-test.html        Manual test page with sample QR codes (not shipped)
+test/            Everything test-only (not shipped):
+  test.mjs         Automated check of content.js in headless Chrome
+  test.html        Manual test page with sample QR codes
+  qrcode_www.youtube.com.png  Dot-style QR fixture used by test.mjs
 SETUP.md         User-facing install/test steps (not shipped)
 README.md        Project overview (not shipped)
 ```
@@ -40,7 +42,7 @@ Flow:
 1. `chrome.commands.onCommand` fires in `background.js`.
 2. Background calls `chrome.tabs.captureVisibleTab()` **first**, before any overlay exists (freeze-frame, like Win+Shift+S). This avoids the overlay leaking into the screenshot and handles animated/video QR codes.
 3. Background injects `lib/jsQR.js` + `content.js` via `chrome.scripting.executeScript`, then a second `executeScript` calls `window.__qrScan(screenshotDataUrl)` (no messaging, so no reply-port semantics to deal with).
-4. `content.js` shows the screenshot as a frozen frame under a dimmed overlay, tracks the drag, crops the selection onto a canvas, runs `jsQR`, renders the popup. It uses no `chrome.*` APIs, which is what makes `test.mjs` possible.
+4. `content.js` shows the screenshot as a frozen frame under a dimmed overlay, tracks the drag, crops the selection onto a canvas, runs `jsQR`, renders the popup. It uses no `chrome.*` APIs, which is what makes `test/test.mjs` possible.
 
 Permissions: `activeTab` + `scripting` only. `activeTab` is granted when the user presses an extension command, which covers both `captureVisibleTab` and script injection. Do not add `<all_urls>` or host permissions.
 
@@ -49,6 +51,7 @@ Permissions: `activeTab` + `scripting` only. `activeTab` is granted when the use
 - **Decoder is jsQR, not `BarcodeDetector`.** The native `BarcodeDetector` API is not available in desktop Chrome/Edge on Windows or Linux. MV3 forbids remotely hosted code, so jsQR must be vendored into `lib/`, never loaded from a CDN.
 - **Crop scale:** compute `scale = screenshotImage.width / window.innerWidth`, not `devicePixelRatio` alone; this also stays correct under browser zoom. Multiply the selection rect (client coords) by `scale` before cropping.
 - **Crop margin:** the crop is expanded by 10% of the selection on each side, using real screenshot pixels, so a drag that clips the code's edge still decodes. Measured: jsQR needs no quiet zone at ≥2 device px per module and fails only at 1px/module, so no white padding or upscaling. `inversionAttempts: 'attemptBoth'` handles light-on-dark codes.
+- **Downscale retry:** dot-style "designer" codes (round modules) fail at full size, because the dots don't touch and jsQR needs solid runs. The fixture fails natively at ≥350px. If the full-size decode fails, `scan()` retries with the longest side at 300px, then 200px; shrinking blurs the dots into blocks. A 200px retry decoded the fixture at every size from 100 to 2400px. Codes that decode at full size never reach the retries.
 - **Re-injection:** the shortcut can be pressed repeatedly on the same tab, re-running `content.js`. The whole file is an IIFE that returns early if `window.__qrScan` exists (top-level `let` would throw on the second run). `__qrScan` tears down any existing overlay/popup first, and the async decode checks `shade.isConnected` so a stale scan can't attach to a new session.
 - **Viewport size:** clamp the popup using the fixed full-viewport shade's `clientWidth/Height`, not `document.documentElement.client*`, which is wrong on quirks-mode pages.
 - **Isolation from the page:** render overlay and popup inside a Shadow DOM host with `z-index: 2147483647` and `all: initial` so page CSS can't break it.
@@ -61,7 +64,7 @@ Permissions: `activeTab` + `scripting` only. `activeTab` is granted when the use
 
 The extension *is* this folder. There's no build; the browser runs the files as-is (loaded "unpacked").
 
-- **Automated check:** `node test.mjs` runs `content.js` in headless Chrome against fake screenshots at 1x and 2x: tight/reversed drags, URL/text/`javascript:`/inverted/no-QR results, Enter/Escape/click, re-trigger, and viewport clamping. Run it after any `content.js` change; exit code 1 on failure. Needs Chrome (`CHROME=<path>` to override) and internet (it fetches qrcode-generator from jsDelivr).
+- **Automated check:** `node test/test.mjs` runs `content.js` in headless Chrome against fake screenshots at 1x and 2x: tight/reversed drags, URL/text/`javascript:`/inverted/no-QR results, Enter/Escape/click, re-trigger, and viewport clamping. Run it after any `content.js` change; exit code 1 on failure. Needs Chrome (`CHROME=<path>` to override) and internet (it fetches qrcode-generator from jsDelivr).
 - **Not automatable here:** the extension wiring (real shortcut, `captureVisibleTab`, injection). Claude can't load the extension into the user's browser, so loading, reloading, and the manual pass are the user's job, documented in `SETUP.md`. Keep that file in sync when behavior, the shortcut, or the checklist changes. After a code change, tell the user what to redo (usually: reload the extension, then reload the tab) and what to check.
 - Debugging: ask the user for the text from the extension card's **Errors** button or the page's DevTools console. Service worker logs are under "Inspect views: service worker" on the card; content script logs are in the page console.
 - Packaging for a store (only when asked): zip the shipped files only, with `manifest.json` at the zip root:
