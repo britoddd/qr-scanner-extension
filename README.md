@@ -13,7 +13,7 @@ No build step and nothing to install. The folder is the extension. Full install,
 ## Features
 
 - **Region select:** the page freezes under a dimmed overlay with a crosshair cursor, the same way Win+Shift+S does. Drag a box over the code.
-- **Popup at the cursor:** opens just up-left of where you release the mouse, so its button is right under your pointer; kept inside the viewport. Press anywhere else to close it. Links are labeled with their domain so you can see where they go before opening. Follows your light/dark theme.
+- **Popup at the cursor:** opens just up-left of where you release the mouse, so its button is right under your pointer; kept inside the viewport. Press anywhere else to close it. Links are labeled with their domain so you can see where they go before opening. Frosted-glass look that follows your light/dark theme.
 - **Smart action button:**
   - `http`/`https` link → **Open** (new tab)
   - anything else (text, Wi-Fi config, `mailto:`, …) → **Okay**

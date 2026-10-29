@@ -16,6 +16,7 @@ Targets Chromium browsers only: Chrome, Edge, Brave, Opera, Vivaldi. One codebas
    - Value is an `http:`/`https:` URL → button **"Open"** (opens it in a new tab).
    - Anything else (plain text, Wi-Fi config, `mailto:`, `javascript:`, etc.) → button **"Okay"** (closes popup).
    - No QR found → message "No QR code found", a recovery tip (drag around the whole code, zoom in if small) + **"Okay"**.
+   - Frosted-glass card (translucent, blurs the page behind it); solid under `prefers-reduced-transparency`.
    - Follows the OS light/dark theme; entrance animations are skipped under `prefers-reduced-motion`.
 6. **Enter** triggers the popup's button action (open or close). **Escape** cancels selection or closes the popup at any stage. A press anywhere outside the popup closes it; a transparent layer behind the popup swallows that press so it doesn't also click the page.
 

@@ -55,6 +55,7 @@ Claude has already checked the selection, decoding, and popup logic automaticall
 - [ ] QR containing plain text → button says **Okay**, Enter closes the popup
 - [ ] QR containing a `javascript:` link → button says **Okay** (it must not run)
 - [ ] Drag over an area with no QR → "No QR code found" with a tip below + **Okay**
+- [ ] The popup is frosted glass: the page behind it shows through, blurred, and its text stays readable
 - [ ] With Windows in dark mode (Settings → Personalization → Colors), the popup is dark too
 - [ ] Inverted QR (light on dark) → decodes
 - [ ] The popup opens up-left of where you released, with its button right next to the cursor

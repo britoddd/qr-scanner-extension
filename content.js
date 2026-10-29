@@ -11,20 +11,24 @@
             background: rgba(32, 33, 36, .92); color: #fff; font: 13px/1.4 system-ui, sans-serif; white-space: nowrap; pointer-events: none; }
     kbd { padding: 0 6px; border: 1px solid rgba(255, 255, 255, .4); border-radius: 4px; font: inherit; }
     .catch { position: fixed; inset: 0; }
-    .pop { --bg: #fff; --fg: #202124; --muted: #5f6368; --accent: #1a73e8; --on-accent: #fff; --ring: rgba(0, 0, 0, .08);
-           position: fixed; display: flex; flex-direction: column; gap: 6px; min-width: 240px; max-width: 360px; padding: 14px 16px;
-           background: var(--bg); color: var(--fg); border-radius: 12px; box-shadow: 0 8px 28px rgba(0, 0, 0, .3), 0 0 0 1px var(--ring);
+    /* Frosted glass: the live page shows through blurred. Alpha .8 + darker/lighter muted text keep contrast ≥4.5:1 on any page. */
+    .pop { --bg: rgba(255, 255, 255, .8); --fg: #202124; --muted: #4d5156; --accent: #1a73e8; --on-accent: #fff;
+           --ring: rgba(255, 255, 255, .6); --glow: rgba(255, 255, 255, .8);
+           position: fixed; display: flex; flex-direction: column; gap: 6px; min-width: 240px; max-width: 360px; padding: 16px 18px;
+           background: var(--bg); color: var(--fg); border: 1px solid var(--ring); border-radius: 20px;
+           backdrop-filter: blur(24px) saturate(180%); box-shadow: 0 12px 40px rgba(0, 0, 0, .28), inset 0 1px 0 var(--glow);
            font: 14px/1.45 system-ui, sans-serif; color-scheme: light; animation: pop .14s ease-out; transform-origin: bottom right; }
     @media (prefers-color-scheme: dark) {
-      .pop { --bg: #292a2d; --fg: #e8eaed; --muted: #9aa0a6; --accent: #8ab4f8; --on-accent: #202124; --ring: rgba(255, 255, 255, .12);
-             color-scheme: dark; }
+      .pop { --bg: rgba(32, 33, 36, .8); --fg: #e8eaed; --muted: #bdc1c6; --accent: #8ab4f8; --on-accent: #202124;
+             --ring: rgba(255, 255, 255, .14); --glow: rgba(255, 255, 255, .12); color-scheme: dark; }
     }
+    @media (prefers-reduced-transparency: reduce) { .pop { background: Canvas; backdrop-filter: none; } }
     .lbl { color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
     .lbl b { color: var(--fg); letter-spacing: normal; text-transform: none; }
     .val { max-height: 200px; overflow: auto; white-space: pre-wrap; word-break: break-all; user-select: text; }
     .none { font-weight: 600; }
     .note { color: var(--muted); font-size: 13px; }
-    button { align-self: flex-end; margin-top: 6px; padding: 7px 18px; border: 0; border-radius: 8px;
+    button { align-self: flex-end; margin-top: 6px; padding: 7px 18px; border: 0; border-radius: 999px;
              background: var(--accent); color: var(--on-accent); font: 500 14px/1.4 system-ui, sans-serif; cursor: pointer; transition: filter .15s; }
     button:hover { filter: brightness(.92); }
     button:active { filter: brightness(.84); }
