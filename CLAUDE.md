@@ -41,6 +41,7 @@ popup.html       Toolbar popup / first-run welcome page: scan button, current sh
 popup.js         Its logic (MV3 forbids inline scripts in extension pages)
 lib/jsQR.js      Vendored jsQR 1.4.0 (Apache-2.0, sha512-verified from npm) — the only third-party code
 lib/jsQR.LICENSE Its license; Apache-2.0 requires shipping it
+LICENSE          This project's license (MIT). Shipped in the store zip: MIT requires the notice in every copy
 icons/           Extension icon: icon.svg (source, same mark as the popup logo) + 16/32/48/128 PNGs rendered from it
                  (Chrome needs PNG). To change it, edit icon.svg and re-render the PNGs with headless Chrome at those sizes.
 test/            Everything test-only (not shipped):
@@ -83,7 +84,7 @@ The extension *is* this folder. There's no build; the browser runs the files as-
 - **Not automatable here:** the extension wiring (real shortcut, `captureVisibleTab`, injection). Claude can't load the extension into the user's browser, so loading, reloading, and the manual pass are the user's job, documented in `SETUP.md`. Keep that file in sync when behavior, the shortcut, or the checklist changes. After a code change, tell the user what to redo (usually: reload the extension, then reload the tab) and what to check.
 - Debugging: ask the user for the text from the extension card's **Errors** button or the page's DevTools console. Service worker logs are under "Inspect views: service worker" on the card; content script logs are in the page console.
 - Packaging for a store (only when asked): zip the shipped files only, with `manifest.json` at the zip root:
-  `& "$env:SystemRoot\System32\tar.exe" -a -c -f dist/qr-scanner-<version>.zip manifest.json background.js content.js popup.html popup.js lib icons`
+  `& "$env:SystemRoot\System32\tar.exe" -a -c -f dist/qr-scanner-<version>.zip manifest.json background.js content.js popup.html popup.js lib icons LICENSE`
   Don't use `Compress-Archive`: in Windows PowerShell 5.1 it writes `lib\jsQR.js` with backslashes, which zip readers treat as a file name, not a folder. Don't use a bare `tar` from Git Bash either: that's GNU tar, which silently writes a tar file named `.zip`. Bump `version` in the manifest before every store upload; stores reject a version they already have.
 
 ## Conventions

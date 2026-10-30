@@ -62,4 +62,4 @@ After changing code, click reload on the extension card, then reload the tab you
 
 ## License
 
-No license chosen for this project yet. The bundled [jsQR](https://github.com/cozmo/jsQR) decoder is Apache-2.0; see [lib/jsQR.LICENSE](./lib/jsQR.LICENSE).
+[MIT](./LICENSE) © 2026 Brian Nich. The bundled [jsQR](https://github.com/cozmo/jsQR) decoder keeps its own Apache-2.0 license; see [lib/jsQR.LICENSE](./lib/jsQR.LICENSE).

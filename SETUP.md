@@ -94,10 +94,10 @@ A store listing gives people one **Add to Chrome / Get** button. It installs the
 2. In PowerShell, in this folder:
 
    ```powershell
-   & "$env:SystemRoot\System32\tar.exe" -a -c -f dist/qr-scanner-1.0.0.zip manifest.json background.js content.js popup.html popup.js lib icons
+   & "$env:SystemRoot\System32\tar.exe" -a -c -f dist/qr-scanner-1.0.0.zip manifest.json background.js content.js popup.html popup.js lib icons LICENSE
    ```
 
-   This zips only the files the extension needs, with `manifest.json` at the top level. Docs and `test/` stay out. Don't use right-click → "Compress", which zips the folder itself, or `Compress-Archive`, which writes broken folder paths.
+   This zips only the files the extension needs, plus the license, with `manifest.json` at the top level. Docs and `test/` stay out. Don't use right-click → "Compress", which zips the folder itself, or `Compress-Archive`, which writes broken folder paths.
 3. Optional check: load `dist/qr-scanner-1.0.0.zip` unzipped (extract it to a new folder, then **Load unpacked**) and do a quick scan.
 
 ### 2. Edge Add-ons (free)
