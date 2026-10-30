@@ -6,6 +6,7 @@
   "description": "Drag a box over a QR code on any webpage to read it.",
   "permissions": ["activeTab", "scripting"],
   "background": { "service_worker": "background.js" },
+  "action": { "default_popup": "popup.html", "default_title": "QR Region Scanner" },
   "commands": {
     "scan": {
       "suggested_key": { "default": "Alt+Shift+Q" },

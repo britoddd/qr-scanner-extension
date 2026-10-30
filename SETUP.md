@@ -29,11 +29,11 @@ Don't move, rename, or delete the folder. The browser loads the extension from i
 
 ## Use it
 
-On any normal webpage, press **Alt+Shift+Q**, then drag a box over a QR code.
+On any normal webpage, press **Alt+Shift+Q** (or click the extension's icon and choose **Scan this page**), then drag a box over a QR code.
 
 It can't run on browser-internal pages (`chrome://…`, `edge://…`, the new-tab page) or on the Chrome Web Store / Edge Add-ons sites. Browsers block every extension there.
 
-To change the shortcut, go to `chrome://extensions/shortcuts` or `edge://extensions/shortcuts`. If Alt+Shift+Q shows as unassigned there, another extension already uses it, so pick a different one.
+To change the shortcut, click the extension's icon → **Change**, or go to `chrome://extensions/shortcuts` / `edge://extensions/shortcuts`. If Alt+Shift+Q shows as unassigned there, another extension already uses it, so pick a different one.
 
 ## After Claude changes the code
 
@@ -63,6 +63,15 @@ Claude has already checked the selection, decoding, and popup logic automaticall
 - [ ] Clicking anywhere outside the popup closes it without clicking whatever is underneath
 - [ ] Pressing the shortcut several times in a row doesn't stack overlays
 - [ ] Still works at 150% page zoom (Ctrl + `+`)
+
+Toolbar popup and welcome page:
+
+- [ ] First install (remove the extension, then **Load unpacked** again) → a "You're all set" tab opens showing **Alt Shift Q**. Reloading the extension doesn't open it again
+- [ ] Click the extension's icon (puzzle-piece menu if not pinned) → popup shows **Scan this page**, the shortcut and how-to steps
+- [ ] **Scan this page** on a normal site → popup closes and the overlay appears; Escape still cancels it
+- [ ] **Scan this page** on `chrome://extensions` or the new-tab page → red "can't be scanned" message, popup stays open
+- [ ] **Change** → opens the browser's shortcuts page; change the key there, reopen the popup → shows the new keys
+- [ ] Clear the shortcut on that page → popup shows "Not set", a red warning and **Set shortcut**
 
 ## Publishing (optional, only if you want others to install it)
 

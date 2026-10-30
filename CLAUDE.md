@@ -19,15 +19,23 @@ Targets Chromium browsers only: Chrome, Edge, Brave, Opera, Vivaldi. One codebas
    - Frosted-glass card (translucent, blurs the page behind it); solid under `prefers-reduced-transparency`.
    - Follows the OS light/dark theme; entrance animations are skipped under `prefers-reduced-motion`.
 6. **Enter** triggers the popup's button action (open or close). **Escape** cancels selection or closes the popup at any stage. A press anywhere outside the popup closes it; a transparent layer behind the popup swallows that press so it doesn't also click the page.
+7. **Toolbar popup** (`popup.html`, opened by clicking the extension icon) for users who don't know the shortcut:
+   - **"Scan this page"** starts the same scan as the shortcut; on pages the browser blocks it shows an inline error instead of closing.
+   - Shows the current shortcut as keys (`chrome.commands.getAll()`), or "Not set" with a warning when Chrome left it blank because another extension took the key.
+   - **Change / Set shortcut** opens `chrome://extensions/shortcuts`. Extensions can't set shortcuts themselves; only that page can.
+   - Short "How to use" steps.
+   - On first install, the same page opens once as a tab (`popup.html?welcome`): "You're all set" heading, no Scan button, plus a tip to pin the extension.
 
 ## Architecture
 
 No build step, no npm, no framework. Plain JS files loaded unpacked.
 
 ```
-manifest.json    MV3 manifest: commands, permissions, background service worker
-background.js    Service worker: handles the shortcut, captures the tab, injects content script
+manifest.json    MV3 manifest: commands, action popup, permissions, background service worker
+background.js    Service worker: handles the shortcut and the popup's scan request, captures the tab, injects content script; opens the welcome tab on install
 content.js       Overlay, drag selection, crop, decode, popup, keyboard handling
+popup.html       Toolbar popup / first-run welcome page: scan button, current shortcut, how-to (inline CSS)
+popup.js         Its logic (MV3 forbids inline scripts in extension pages)
 lib/jsQR.js      Vendored jsQR 1.4.0 (Apache-2.0, sha512-verified from npm) — the only third-party code
 lib/jsQR.LICENSE Its license; Apache-2.0 requires shipping it
 test/            Everything test-only (not shipped):
@@ -40,7 +48,7 @@ README.md        Project overview (not shipped)
 
 Flow:
 
-1. `chrome.commands.onCommand` fires in `background.js`.
+1. `chrome.commands.onCommand` fires in `background.js`, or the popup's "Scan this page" sends the active tab via `chrome.runtime.sendMessage`. Both call `scan(tab)`. The popup delegates because it closes as soon as the page takes focus, which would abort its own calls. Clicking the icon grants `activeTab` just like the shortcut.
 2. Background calls `chrome.tabs.captureVisibleTab()` **first**, before any overlay exists (freeze-frame, like Win+Shift+S). This avoids the overlay leaking into the screenshot and handles animated/video QR codes.
 3. Background injects `lib/jsQR.js` + `content.js` via `chrome.scripting.executeScript`, then a second `executeScript` calls `window.__qrScan(screenshotDataUrl)` (no messaging, so no reply-port semantics to deal with).
 4. `content.js` shows the screenshot as a frozen frame under a dimmed overlay, tracks the drag, crops the selection onto a canvas, runs `jsQR`, renders the popup. It uses no `chrome.*` APIs, which is what makes `test/test.mjs` possible.
@@ -69,11 +77,12 @@ The extension *is* this folder. There's no build; the browser runs the files as-
 - **Not automatable here:** the extension wiring (real shortcut, `captureVisibleTab`, injection). Claude can't load the extension into the user's browser, so loading, reloading, and the manual pass are the user's job, documented in `SETUP.md`. Keep that file in sync when behavior, the shortcut, or the checklist changes. After a code change, tell the user what to redo (usually: reload the extension, then reload the tab) and what to check.
 - Debugging: ask the user for the text from the extension card's **Errors** button or the page's DevTools console. Service worker logs are under "Inspect views: service worker" on the card; content script logs are in the page console.
 - Packaging for a store (only when asked): zip the shipped files only, with `manifest.json` at the zip root:
-  `Compress-Archive -Path manifest.json, background.js, content.js, lib -DestinationPath dist/qr-scanner.zip -Force`
+  `Compress-Archive -Path manifest.json, background.js, content.js, popup.html, popup.js, lib -DestinationPath dist/qr-scanner.zip -Force`
   Stores also require a 128×128 icon declared in the manifest.
 
 ## Conventions
 
 - Plain ES2020+ JS, no TypeScript, no bundler, no dependencies beyond `lib/jsQR.js`. The test files may load qrcode-generator from a CDN; the extension itself never loads remote code.
-- Keep it to the files listed above; don't add an options page, popup page, or icons until there's a real need.
-- Keep UI strings in English and inline in `content.js`.
+- Keep it to the files listed above; don't add an options page or icons until there's a real need.
+- Keep UI strings in English and inline in `content.js` / `popup.html` / `popup.js`.
+- `popup.html` reuses `content.js`'s popup palette (same light/dark tokens, accent, pill buttons) so both feel like one product.

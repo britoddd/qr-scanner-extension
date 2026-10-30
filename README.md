@@ -6,7 +6,8 @@ Snipping-tool-style QR scanner for Chromium browsers: press a shortcut, drag a b
 
 1. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
 2. Click **Load unpacked** and select this folder.
-3. On any webpage, press **Alt+Shift+Q** and drag over a QR code.
+3. A welcome tab opens with the shortcut and how to use it.
+4. On any webpage, press **Alt+Shift+Q** (or click the extension's icon → **Scan this page**) and drag over a QR code.
 
 No build step and nothing to install. The folder is the extension. Full install, update, and test steps are in [SETUP.md](./SETUP.md).
 
@@ -19,6 +20,7 @@ No build step and nothing to install. The folder is the extension. Full install,
   - anything else (text, Wi-Fi config, `mailto:`, …) → **Okay**
   - nothing found → "No QR code found" + **Okay**
 - **Keyboard:** **Enter** runs the button, **Escape** cancels at any point.
+- **Toolbar popup:** click the extension's icon to scan without the shortcut, see your current shortcut, and jump to the page where you change it. The same page opens once as a welcome tab after install.
 - **Works on tricky codes:** light-on-dark codes, high-DPI screens, browser zoom, and video frames (decoding uses the frozen frame).
 - **Private and offline:** no network requests, no remote code. It only asks for `activeTab` + `scripting`, so it can see a page only when you press the shortcut.
 
@@ -28,7 +30,7 @@ Works in Chrome, Edge, Brave, Opera, and Vivaldi.
 
 | Setting | Default | Change it at |
 |---------|---------|--------------|
-| Scan shortcut | `Alt+Shift+Q` | `chrome://extensions/shortcuts` or `edge://extensions/shortcuts` |
+| Scan shortcut | `Alt+Shift+Q` | Extension icon → **Change**, or `chrome://extensions/shortcuts` / `edge://extensions/shortcuts` |
 
 If the shortcut shows as unassigned, another extension already uses it, so pick a different one there.
 
@@ -38,9 +40,10 @@ If the shortcut shows as unassigned, another extension already uses it, so pick 
 
 | File | Role |
 |------|------|
-| `manifest.json` | Manifest V3: shortcut and permissions |
-| `background.js` | On shortcut: captures the visible tab, injects the scanner |
+| `manifest.json` | Manifest V3: shortcut, toolbar popup, and permissions |
+| `background.js` | On shortcut or popup scan: captures the visible tab, injects the scanner. Opens the welcome tab on install |
 | `content.js` | Overlay, drag selection, crop, decode, popup, keys |
+| `popup.html`, `popup.js` | Toolbar popup and first-run welcome page |
 | `lib/jsQR.js` | Vendored QR decoder |
 | `test/test.mjs` | Automated check of `content.js` in headless Chrome |
 | `test/test.html` | Manual test page with sample QR codes |

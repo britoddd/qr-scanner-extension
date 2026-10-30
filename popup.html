@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>QR Region Scanner</title>
+<style>
+  :root { --page: #f1f3f4; --bg: #fff; --fg: #202124; --muted: #4d5156; --line: rgba(0, 0, 0, .1); --key: #f1f3f4;
+          --accent: #1a73e8; --on-accent: #fff; --tint: rgba(26, 115, 232, .12); --warn: #b3261e; color-scheme: light; }
+  @media (prefers-color-scheme: dark) {
+    :root { --page: #202124; --bg: #292a2d; --fg: #e8eaed; --muted: #bdc1c6; --line: rgba(255, 255, 255, .14); --key: #3c4043;
+            --accent: #8ab4f8; --on-accent: #202124; --tint: rgba(138, 180, 248, .16); --warn: #f2b8b5; color-scheme: dark; }
+  }
+  body { margin: 0; width: 320px; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, sans-serif; }
+  main { display: flex; flex-direction: column; gap: 16px; padding: 18px; }
+  /* Welcome tab: same content as a centered card. */
+  .welcome { width: auto; min-height: 100vh; display: grid; place-items: center; background: var(--page); }
+  .welcome main { width: 340px; padding: 24px; background: var(--bg); border-radius: 20px;
+                  box-shadow: 0 12px 40px rgba(0, 0, 0, .14), 0 0 0 1px var(--line); }
+  header { display: flex; align-items: center; gap: 12px; }
+  .logo { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--tint); color: var(--accent); }
+  .logo svg { width: 22px; height: 22px; }
+  h1 { margin: 0; font-size: 16px; font-weight: 600; }
+  h2 { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  p { margin: 0; }
+  .sub, .tip, ol { color: var(--muted); }
+  section { padding-top: 14px; border-top: 1px solid var(--line); }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .keys { display: flex; align-items: center; gap: 4px; font-weight: 500; }
+  kbd { min-width: 18px; padding: 3px 8px; border-radius: 6px; background: var(--key); box-shadow: inset 0 -1px 0 var(--line);
+        font: 600 13px/1.4 system-ui, sans-serif; text-align: center; }
+  .warn { margin-top: 8px; color: var(--warn); font-size: 13px; }
+  .err { color: var(--warn); }
+  .err:empty { display: none; }
+  ol { margin: 0; padding-left: 20px; }
+  li + li { margin-top: 4px; }
+  li b { color: var(--fg); font-weight: 600; }
+  .tip { font-size: 13px; }
+  button { padding: 10px 18px; border: 0; border-radius: 999px; font: 500 14px/1.4 system-ui, sans-serif; cursor: pointer; transition: filter .15s; }
+  button:hover { filter: brightness(.92); }
+  button:active { filter: brightness(.84); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .primary { background: var(--accent); color: var(--on-accent); }
+  .secondary { padding: 8px 14px; background: var(--tint); color: var(--accent); }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="logo">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="none" stroke="currentColor" stroke-width="2" d="M4 4h5v5H4zM15 4h5v5h-5zM4 15h5v5H4z"/>
+        <path fill="currentColor" d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3v1h-3zM20 14h1v3h-1z"/>
+      </svg>
+    </div>
+    <div>
+      <h1 id="title">QR Region Scanner</h1>
+      <p class="sub" id="sub">Read QR codes on any webpage.</p>
+    </div>
+  </header>
+
+  <button id="scan" class="primary">Scan this page</button>
+  <p id="err" class="err" role="status"></p>
+
+  <section>
+    <h2>Shortcut</h2>
+    <div class="row">
+      <span id="keys" class="keys"></span>
+      <button id="change" class="secondary">Change</button>
+    </div>
+    <p id="unset" class="warn" hidden>No shortcut set. Another extension may already use Alt+Shift+Q, so pick a different one.</p>
+  </section>
+
+  <section>
+    <h2>How to use</h2>
+    <ol>
+      <li>On any webpage, press the shortcut, or click this extension’s icon and choose <b>Scan this page</b>.</li>
+      <li>Drag a box around the QR code.</li>
+      <li>Click <b>Open</b> for a link, or select the text to copy it.</li>
+    </ol>
+  </section>
+
+  <p id="pin" class="tip" hidden>Tip: pin the extension so it’s one click away. Click the puzzle-piece icon in the toolbar, then the pin next to QR Region Scanner.</p>
+</main>
+<script src="popup.js"></script>
+</body>
+</html>
