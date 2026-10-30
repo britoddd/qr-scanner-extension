@@ -29,7 +29,7 @@ Don't move, rename, or delete the folder. The browser loads the extension from i
 
 ## Use it
 
-On any normal webpage, press **Alt+Shift+Q** (or click the extension's icon and choose **Scan this page**), then drag a box over a QR code.
+On any normal webpage, press **Alt+Shift+Q** (or click the extension's icon and choose **Scan part of page**), then drag a box over a QR code. To skip the dragging, click the icon and choose **Scan this page**: it finds a code anywhere on screen.
 
 It can't run on browser-internal pages (`chrome://…`, `edge://…`, the new-tab page) or on the Chrome Web Store / Edge Add-ons sites. Browsers block every extension there.
 
@@ -51,7 +51,8 @@ Open `test/test.html` (it needs internet, since it loads a QR generator to draw 
 Claude has already checked the selection, decoding, and popup logic automatically (`node test/test.mjs`). This manual pass checks what only a real browser can: the shortcut, the screen capture, and how it looks.
 
 - [ ] Overlay shows a "Drag over a QR code · Esc to cancel" pill at the top; it disappears once you start dragging
-- [ ] QR containing a web link → popup labeled "LINK · *domain*" shows the link, button says **Open**, Enter opens it in a new tab
+- [ ] The extension's toolbar icon (and its icon on the extensions page) is the blue rounded square with the white QR mark, the same as the popup's logo
+- [ ] QR containing a web link → popup with a link badge, title "Link" and the *domain* under it, the link in a rounded inset box, button **Open ↗**, Enter opens it in a new tab
 - [ ] QR containing plain text → button says **Okay**, Enter closes the popup
 - [ ] QR containing a `javascript:` link → button says **Okay** (it must not run)
 - [ ] Drag over an area with no QR → "No QR code found" with a tip below + **Okay**
@@ -67,9 +68,12 @@ Claude has already checked the selection, decoding, and popup logic automaticall
 Toolbar popup and welcome page:
 
 - [ ] First install (remove the extension, then **Load unpacked** again) → a "You're all set" tab opens showing **Alt Shift Q**. Reloading the extension doesn't open it again
-- [ ] Click the extension's icon (puzzle-piece menu if not pinned) → popup shows **Scan this page**, the shortcut and how-to steps
-- [ ] **Scan this page** on a normal site → popup closes and the overlay appears; Escape still cancels it
-- [ ] **Scan this page** on `chrome://extensions` or the new-tab page → red "can't be scanned" message, popup stays open
+- [ ] The popup and welcome tab look like frosted glass: soft color glow in the background, translucent panels with a light edge, in both light and dark mode
+- [ ] Click the extension's icon → popup shows two tiles (**Scan this page**, **Scan part of page**), the shortcut card, and a collapsed **How it works** that expands on click. Tab / Enter work through all of them. New extensions are hidden in the puzzle-piece menu; to keep it in the toolbar, click the pin (Chrome) or eye icon (Edge) next to it there
+- [ ] **Scan this page** on `test/test.html` (or any page with one QR code visible) → no overlay; the result popup appears centered with the code's value
+- [ ] **Scan this page** with no QR code visible → "No QR code found" with a tip to try Scan part of page
+- [ ] **Scan part of page** on a normal site → popup closes and the drag overlay appears; Escape still cancels it
+- [ ] Either scan button on `edge://extensions` or the new-tab page → red "can't be scanned" message, popup stays open
 - [ ] **Change** → opens the browser's shortcuts page; change the key there, reopen the popup → shows the new keys
 - [ ] Clear the shortcut on that page → popup shows "Not set", a red warning and **Set shortcut**
 

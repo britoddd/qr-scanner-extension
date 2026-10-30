@@ -11,13 +11,13 @@ async function checks() {
   const out = [];
   const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
   const ui = () => document.querySelector('qr-scanner-ui')?.shadowRoot;
-  const popup = () => [ui()?.querySelector('.val')?.textContent, ui()?.querySelector('button')?.textContent].join();
+  const popup = () => [ui()?.querySelector('#val')?.textContent, ui()?.querySelector('button')?.textContent].join();
   const key = (k) => dispatchEvent(new KeyboardEvent('keydown', { key: k, cancelable: true }));
   const check = (name, ok, got) => out.push(`${ok ? 'PASS' : 'FAIL'} ${name}${ok ? '' : ' -> got ' + JSON.stringify(got)}`);
 
   // Fake captureVisibleTab: viewport-sized PNG at device resolution with a QR at (qx, qy) CSS px. Starts a scan.
-  // value: text to encode, or an image drawn at px × px.
-  const shot = (value, qx, qy, invert = false, px = 0) => {
+  // value: text to encode, or an image drawn at px × px. whole: whole-page scan (no drag).
+  const shot = (value, qx, qy, invert = false, px = 0, whole = false) => {
     const d = devicePixelRatio, cell = 4, c = document.createElement('canvas');
     c.width = innerWidth * d;
     c.height = innerHeight * d;
@@ -38,9 +38,10 @@ async function checks() {
       for (let r = 0; r < n; r++) for (let k = 0; k < n; k++)
         if (qr.isDark(r, k)) g.fillRect((qx + k * cell) * d, (qy + r * cell) * d, cell * d, cell * d);
     }
-    __qrScan(c.toDataURL());
+    __qrScan(c.toDataURL(), whole);
     return size;
   };
+  const waitPopup = async () => { for (let i = 0; i < 40 && !ui()?.querySelector('.pop'); i++) await sleep(50); };
   const drag = async (x1, y1, x2, y2) => {
     const shade = ui().querySelector('.shade');
     for (const [type, x, y] of [['pointerdown', x1, y1], ['pointermove', x2, y2], ['pointerup', x2, y2]])
@@ -88,7 +89,7 @@ async function checks() {
   const p = ui().querySelector('.pop');
   check('popup bottom-right at release point',
     parseFloat(p.style.left) + p.offsetWidth === 400 && parseFloat(p.style.top) + p.offsetHeight === 400, p.style.cssText);
-  ui().querySelector('.val').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
+  ui().querySelector('#val').dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
   check('press inside popup keeps it', !!ui());
   ui().elementFromPoint(5, 5)?.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true }));
   check('press outside popup closes it', !ui());
@@ -104,6 +105,22 @@ async function checks() {
   shot(null);
   shot(null);
   check('repeat press keeps one overlay', document.querySelectorAll('qr-scanner-ui').length === 1);
+  key('Escape');
+
+  // Whole-page scan: decodes the full frame without a drag; popup is centered.
+  shot('https://example.com/whole', 700, 500, false, 0, true);
+  await waitPopup();
+  check('whole page -> Open', popup() === 'https://example.com/whole,Open', popup());
+  const wp = ui().querySelector('.pop');
+  check('whole page popup centered',
+    Math.abs(parseFloat(wp.style.left) + wp.offsetWidth / 2 - innerWidth / 2) <= 1 &&
+    Math.abs(parseFloat(wp.style.top) + wp.offsetHeight / 2 - innerHeight / 2) <= 1, wp.style.cssText);
+  key('Escape');
+  check('Escape closes whole-page popup', !ui());
+
+  shot(null, 0, 0, false, 0, true);
+  await waitPopup();
+  check('whole page, no QR -> message + Okay', popup() === 'No QR code found,Okay', popup());
   key('Escape');
 
   shot('Hello', innerWidth - 150, innerHeight - 150);
