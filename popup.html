@@ -5,43 +5,105 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>QR Region Scanner</title>
 <style>
-  :root { --page: #f1f3f4; --bg: #fff; --fg: #202124; --muted: #4d5156; --line: rgba(0, 0, 0, .1); --key: #f1f3f4;
-          --accent: #1a73e8; --on-accent: #fff; --tint: rgba(26, 115, 232, .12); --warn: #b3261e; color-scheme: light; }
+  /* Glass: panels are translucent + blurred over soft color blobs painted on the body. (The popup window itself is
+     opaque, so the page can't show through it like it does behind the scan result popup.) */
+  :root { --bg: #f3f5fb; --blob1: rgba(26, 115, 232, .32); --blob2: rgba(161, 66, 244, .22); --blob3: rgba(0, 172, 193, .22);
+          --glass: rgba(255, 255, 255, .55); --glass-hover: rgba(255, 255, 255, .78); --glass-line: rgba(255, 255, 255, .75);
+          --glass-hi: rgba(255, 255, 255, .9); --shadow: rgba(31, 38, 135, .08); --solid: #fff;
+          --fg: #202124; --muted: #4d5156; --line: rgba(0, 0, 0, .08); --key: rgba(255, 255, 255, .85);
+          --accent: #1a73e8; --accent-2: #5b5bf0; --on-accent: #fff; --glow: rgba(26, 115, 232, .35); --tint: rgba(26, 115, 232, .1);
+          --warn: #b3261e; --ok: #137333; color-scheme: light; }
   @media (prefers-color-scheme: dark) {
-    :root { --page: #202124; --bg: #292a2d; --fg: #e8eaed; --muted: #bdc1c6; --line: rgba(255, 255, 255, .14); --key: #3c4043;
-            --accent: #8ab4f8; --on-accent: #202124; --tint: rgba(138, 180, 248, .16); --warn: #f2b8b5; color-scheme: dark; }
+    :root { --bg: #16171b; --blob1: rgba(138, 180, 248, .26); --blob2: rgba(197, 138, 249, .18); --blob3: rgba(120, 217, 236, .14);
+            --glass: rgba(255, 255, 255, .06); --glass-hover: rgba(255, 255, 255, .11); --glass-line: rgba(255, 255, 255, .12);
+            --glass-hi: rgba(255, 255, 255, .14); --shadow: rgba(0, 0, 0, .3); --solid: #292a2d;
+            --fg: #e8eaed; --muted: #bdc1c6; --line: rgba(255, 255, 255, .1); --key: rgba(255, 255, 255, .1);
+            --accent: #8ab4f8; --accent-2: #b4a7fa; --on-accent: #202124; --glow: rgba(138, 180, 248, .25); --tint: rgba(138, 180, 248, .14);
+            --warn: #f2b8b5; --ok: #81c995; color-scheme: dark; }
   }
-  body { margin: 0; width: 320px; background: var(--bg); color: var(--fg); font: 14px/1.45 system-ui, sans-serif; }
-  main { display: flex; flex-direction: column; gap: 16px; padding: 18px; }
-  /* Welcome tab: same content as a centered card. */
-  .welcome { width: auto; min-height: 100vh; display: grid; place-items: center; background: var(--page); }
-  .welcome main { width: 340px; padding: 24px; background: var(--bg); border-radius: 20px;
-                  box-shadow: 0 12px 40px rgba(0, 0, 0, .14), 0 0 0 1px var(--line); }
-  header { display: flex; align-items: center; gap: 12px; }
-  .logo { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--tint); color: var(--accent); }
-  .logo svg { width: 22px; height: 22px; }
-  h1 { margin: 0; font-size: 16px; font-weight: 600; }
-  h2 { margin: 0 0 8px; color: var(--muted); font-size: 12px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
+  * { box-sizing: border-box; }
+  /* The browser draws the popup window's frame, so its corners can't be made transparent. The content is a rounded
+     glass card floating on the glow instead. */
+  body { margin: 0; width: 336px; padding: 8px; color: var(--fg); font: 14px/1.45 system-ui, sans-serif;
+         background: radial-gradient(circle at 0 0, var(--blob1), transparent 55%), radial-gradient(circle at 100% 40%, var(--blob2), transparent 50%),
+                     radial-gradient(circle at 15% 100%, var(--blob3), transparent 50%), var(--bg);
+         background-repeat: no-repeat; }
+  main { display: flex; flex-direction: column; gap: 14px; padding: 16px; border-radius: 20px; }
+  .glass, main { background: var(--glass); backdrop-filter: blur(20px) saturate(160%); border: 1px solid var(--glass-line);
+           box-shadow: inset 0 1px 0 var(--glass-hi), 0 4px 16px var(--shadow); }
+  /* Welcome tab: same content as a centered glass card. */
+  .welcome { width: auto; min-height: 100vh; display: grid; place-items: center; padding: 24px; }
+  .welcome main { width: 360px; padding: 24px; border-radius: 24px; }
   p { margin: 0; }
-  .sub, .tip, ol { color: var(--muted); }
-  section { padding-top: 14px; border-top: 1px solid var(--line); }
-  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .keys { display: flex; align-items: center; gap: 4px; font-weight: 500; }
-  kbd { min-width: 18px; padding: 3px 8px; border-radius: 6px; background: var(--key); box-shadow: inset 0 -1px 0 var(--line);
-        font: 600 13px/1.4 system-ui, sans-serif; text-align: center; }
-  .warn { margin-top: 8px; color: var(--warn); font-size: 13px; }
-  .err { color: var(--warn); }
+  svg { flex: none; width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  header { display: flex; align-items: center; gap: 12px; }
+  .logo { flex: none; display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--on-accent);
+          background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: 0 4px 14px var(--glow), inset 0 1px 0 rgba(255, 255, 255, .3); }
+  .logo svg { width: 22px; height: 22px; }
+  h1 { margin: 0; font-size: 15px; font-weight: 600; }
+  .sub { color: var(--muted); font-size: 13px; }
+
+  button { font: inherit; color: inherit; border: 0; cursor: pointer; }
+  button:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { cursor: progress; opacity: .6; }
+
+  /* The two scan actions, as tiles that explain themselves. */
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .tile { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-height: 104px; padding: 12px;
+          border-radius: 16px; text-align: left; transition: background-color .15s, transform .1s, box-shadow .15s; }
+  .tile:hover:not(:disabled) { background: var(--glass-hover); }
+  .tile:active:not(:disabled) { transform: scale(.97); }
+  .tile svg { margin-bottom: 2px; color: var(--accent); }
+  .tile b { font-weight: 600; line-height: 1.25; }
+  .tile span { color: var(--muted); font-size: 12px; line-height: 1.35; }
+  .tile.primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: var(--on-accent); border-color: transparent;
+                  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 6px 20px var(--glow); }
+  .tile.primary:hover:not(:disabled) { background: linear-gradient(135deg, var(--accent), var(--accent-2)); filter: brightness(1.06); }
+  .tile.primary svg, .tile.primary span { color: inherit; }
+  .err { color: var(--warn); font-size: 13px; }
   .err:empty { display: none; }
-  ol { margin: 0; padding-left: 20px; }
-  li + li { margin-top: 4px; }
+
+  /* Settings-style card. */
+  .card { border-radius: 16px; }
+  .row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px; }
+  .row b { display: block; font-weight: 600; }
+  .row span { color: var(--muted); font-size: 12px; }
+  .keys { display: flex; gap: 4px; }
+  kbd { min-width: 24px; padding: 2px 7px; border-radius: 6px; background: var(--key); box-shadow: inset 0 0 0 1px var(--line), 0 1px 0 var(--line);
+        font: 600 12px/1.5 system-ui, sans-serif; text-align: center; }
+  .keys.unset { color: var(--warn); font-weight: 600; font-size: 13px; }
+  .link { display: flex; align-items: center; justify-content: space-between; width: 100%; padding: 11px 12px;
+          border-top: 1px solid var(--line); border-radius: 0 0 15px 15px; background: none; color: var(--accent); font-weight: 500;
+          transition: background-color .15s; }
+  .link:hover { background: var(--tint); }
+  .link svg { width: 16px; height: 16px; }
+  .warn { padding: 0 12px 12px; color: var(--warn); font-size: 12px; }
+
+  /* How it works: collapsed in the popup, open on the welcome tab. */
+  details { border-radius: 14px; }
+  summary { display: flex; align-items: center; justify-content: space-between; padding: 4px 2px; list-style: none;
+            color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; border-radius: 6px; }
+  summary::-webkit-details-marker { display: none; }
+  summary svg { width: 16px; height: 16px; transition: transform .15s; }
+  details[open] summary svg { transform: rotate(90deg); }
+  ol { margin: 8px 0 0; padding: 0; list-style: none; counter-reset: step; }
+  li { position: relative; padding-left: 30px; color: var(--muted); font-size: 13px; counter-increment: step; }
+  li + li { margin-top: 8px; }
+  li::before { content: counter(step); position: absolute; left: 0; top: 0; display: grid; place-items: center; width: 20px; height: 20px;
+               border-radius: 50%; background: var(--tint); color: var(--accent); font-size: 11px; font-weight: 700; }
   li b { color: var(--fg); font-weight: 600; }
-  .tip { font-size: 13px; }
-  button { padding: 10px 18px; border: 0; border-radius: 999px; font: 500 14px/1.4 system-ui, sans-serif; cursor: pointer; transition: filter .15s; }
-  button:hover { filter: brightness(.92); }
-  button:active { filter: brightness(.84); }
-  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  .primary { background: var(--accent); color: var(--on-accent); }
-  .secondary { padding: 8px 14px; background: var(--tint); color: var(--accent); }
+
+  .tip { display: flex; gap: 10px; padding: 12px; border-radius: 16px; font-size: 13px; }
+  .tip svg { width: 18px; height: 18px; color: var(--accent); }
+  footer { display: flex; align-items: center; justify-content: center; gap: 6px; color: var(--muted); font-size: 12px; }
+  footer svg { width: 14px; height: 14px; color: var(--ok); }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+  @media (prefers-reduced-transparency: reduce) {
+    body { background: var(--bg); }
+    .glass, main { background: var(--solid); backdrop-filter: none; }
+  }
   [hidden] { display: none !important; }
 </style>
 </head>
@@ -50,8 +112,8 @@
   <header>
     <div class="logo">
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="none" stroke="currentColor" stroke-width="2" d="M4 4h5v5H4zM15 4h5v5h-5zM4 15h5v5H4z"/>
-        <path fill="currentColor" d="M14 14h3v3h-3zM17 17h3v3h-3zM14 20h3v1h-3zM20 14h1v3h-1z"/>
+        <rect x="4" y="4" width="5" height="5" rx="1"/><rect x="15" y="4" width="5" height="5" rx="1"/><rect x="4" y="15" width="5" height="5" rx="1"/>
+        <path d="M14 14h1M20 14v1M14 20h1M17 17h3v3"/>
       </svg>
     </div>
     <div>
@@ -60,28 +122,52 @@
     </div>
   </header>
 
-  <button id="scan" class="primary">Scan this page</button>
+  <div id="actions" class="actions">
+    <button id="scan" class="tile primary">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7V5a2 2 0 0 1 2-2h2M17 3h2a2 2 0 0 1 2 2v2M21 17v2a2 2 0 0 1-2 2h-2M7 21H5a2 2 0 0 1-2-2v-2M7 12h10"/></svg>
+      <b>Scan this page</b>
+      <span>Finds a code anywhere on screen</span>
+    </button>
+    <button id="part" class="tile glass">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 3a2 2 0 0 0-2 2M19 3a2 2 0 0 1 2 2M5 21a2 2 0 0 1-2-2M9 3h1M9 21h1M14 3h1M3 9v1M21 9v1M3 14v1"/><path d="m12 12 9 3.5-4 1.5-1.5 4z"/></svg>
+      <b>Scan part of page</b>
+      <span>Drag a box around one code</span>
+    </button>
+  </div>
   <p id="err" class="err" role="status"></p>
 
-  <section>
-    <h2>Shortcut</h2>
+  <div class="card glass">
     <div class="row">
+      <div>
+        <b>Keyboard shortcut</b>
+        <span>Scans part of the page</span>
+      </div>
       <span id="keys" class="keys"></span>
-      <button id="change" class="secondary">Change</button>
     </div>
-    <p id="unset" class="warn" hidden>No shortcut set. Another extension may already use Alt+Shift+Q, so pick a different one.</p>
-  </section>
+    <p id="unset" class="warn" hidden>Another extension may already use Alt+Shift+Q, so pick a different one.</p>
+    <button id="change" class="link"><span id="change-label">Change shortcut</span>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 17 17 7M7 7h10v10"/></svg>
+    </button>
+  </div>
 
-  <section>
-    <h2>How to use</h2>
+  <details id="how">
+    <summary>How it works <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></summary>
     <ol>
-      <li>On any webpage, press the shortcut, or click this extension’s icon and choose <b>Scan this page</b>.</li>
-      <li>Drag a box around the QR code.</li>
+      <li>On any webpage, click this extension’s icon and choose <b>Scan this page</b>.</li>
+      <li>Not found, or several codes on screen? Choose <b>Scan part of page</b> (or press the shortcut) and drag a box around one.</li>
       <li>Click <b>Open</b> for a link, or select the text to copy it.</li>
     </ol>
-  </section>
+  </details>
 
-  <p id="pin" class="tip" hidden>Tip: pin the extension so it’s one click away. Click the puzzle-piece icon in the toolbar, then the pin next to QR Region Scanner.</p>
+  <p id="pin" class="tip glass" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z"/></svg>
+    <span>Keep it one click away: browsers hide new extensions, so click the puzzle-piece icon in the toolbar, then the pin (Chrome) or eye icon (Edge) next to QR Region Scanner.</span>
+  </p>
+
+  <footer>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/></svg>
+    Works offline. Nothing leaves your browser.
+  </footer>
 </main>
 <script src="popup.js"></script>
 </body>

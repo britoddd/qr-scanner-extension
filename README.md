@@ -7,7 +7,7 @@ Snipping-tool-style QR scanner for Chromium browsers: press a shortcut, drag a b
 1. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.
 2. Click **Load unpacked** and select this folder.
 3. A welcome tab opens with the shortcut and how to use it.
-4. On any webpage, press **Alt+Shift+Q** (or click the extension's icon → **Scan this page**) and drag over a QR code.
+4. On any webpage, press **Alt+Shift+Q** and drag over a QR code. Or click the extension's icon → **Scan this page** to find it without dragging.
 
 No build step and nothing to install. The folder is the extension. Full install, update, and test steps are in [SETUP.md](./SETUP.md).
 
@@ -20,7 +20,7 @@ No build step and nothing to install. The folder is the extension. Full install,
   - anything else (text, Wi-Fi config, `mailto:`, …) → **Okay**
   - nothing found → "No QR code found" + **Okay**
 - **Keyboard:** **Enter** runs the button, **Escape** cancels at any point.
-- **Toolbar popup:** click the extension's icon to scan without the shortcut, see your current shortcut, and jump to the page where you change it. The same page opens once as a welcome tab after install.
+- **Toolbar popup:** click the extension's icon to **Scan this page** (finds a QR code anywhere on screen, no dragging) or **Scan part of page** (drag a box, same as the shortcut), see your current shortcut, and jump to the page where you change it. The same page opens once as a welcome tab after install.
 - **Works on tricky codes:** light-on-dark codes, high-DPI screens, browser zoom, and video frames (decoding uses the frozen frame).
 - **Private and offline:** no network requests, no remote code. It only asks for `activeTab` + `scripting`, so it can see a page only when you press the shortcut.
 
@@ -44,6 +44,7 @@ If the shortcut shows as unassigned, another extension already uses it, so pick 
 | `background.js` | On shortcut or popup scan: captures the visible tab, injects the scanner. Opens the welcome tab on install |
 | `content.js` | Overlay, drag selection, crop, decode, popup, keys |
 | `popup.html`, `popup.js` | Toolbar popup and first-run welcome page |
+| `icons/` | Extension icon (`icon.svg` source + PNG sizes) |
 | `lib/jsQR.js` | Vendored QR decoder |
 | `test/test.mjs` | Automated check of `content.js` in headless Chrome |
 | `test/test.html` | Manual test page with sample QR codes |

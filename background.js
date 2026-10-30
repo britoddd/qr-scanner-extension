@@ -1,11 +1,12 @@
-// Resolves true if the overlay is up, false on pages the browser won't let us touch.
-async function scan(tab) {
+// Resolves true if the scanner is up, false on pages the browser won't let us touch.
+// whole: decode the entire visible page instead of letting the user drag a box.
+async function scan(tab, whole = false) {
   try {
     // Capture before the overlay exists; the user selects on this frozen frame.
     const shot = await chrome.tabs.captureVisibleTab(tab.windowId, { format: 'png' });
     const target = { tabId: tab.id };
     await chrome.scripting.executeScript({ target, files: ['lib/jsQR.js', 'content.js'] });
-    await chrome.scripting.executeScript({ target, func: (s) => window.__qrScan(s), args: [shot] });
+    await chrome.scripting.executeScript({ target, func: (s, w) => window.__qrScan(s, w), args: [shot, whole] });
     return true;
   } catch (e) {
     // chrome://, edge://, the Web Store and the new-tab page can't be captured or scripted.
@@ -16,9 +17,9 @@ async function scan(tab) {
 
 chrome.commands.onCommand.addListener((_command, tab) => scan(tab));
 
-// "Scan this page" in the popup. The scan runs here because the popup closes as soon as the page takes focus.
-chrome.runtime.onMessage.addListener((tab, _sender, reply) => {
-  scan(tab).then(reply);
+// The popup's scan buttons. The scan runs here because the popup closes as soon as the page takes focus.
+chrome.runtime.onMessage.addListener(({ tab, whole }, _sender, reply) => {
+  scan(tab, whole).then(reply);
   return true; // reply asynchronously
 });
 
