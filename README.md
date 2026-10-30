@@ -2,6 +2,12 @@
 
 Snipping-tool-style QR scanner for Chromium browsers: press a shortcut, drag a box over a QR code on any webpage, and read it.
 
+| Drag over a code | Get its value |
+| --- | --- |
+| ![Dragging a box over a QR code](screenshots/1-scan-part-of-page.png) | ![Result popup with an Open button](screenshots/2-result-link.png) |
+| **Toolbar popup** | **Scan the whole page (dark theme)** |
+| ![Toolbar popup with scan buttons and shortcut](screenshots/3-toolbar-popup.png) | ![Whole-page scan result in dark theme](screenshots/4-scan-whole-page-dark.png) |
+
 ## Quick Start
 
 1. Open `chrome://extensions` (or `edge://extensions`) and turn on **Developer mode**.

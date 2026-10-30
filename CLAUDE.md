@@ -48,6 +48,7 @@ test/            Everything test-only (not shipped):
   test.mjs         Automated check of content.js in headless Chrome
   test.html        Manual test page with sample QR codes
   qrcode_www.youtube.com.png  Dot-style QR fixture used by test.mjs
+screenshots/     README images, copied from the store screenshots in dist/store/ (dist/ is gitignored; not shipped)
 SETUP.md         User-facing install/test steps (not shipped)
 README.md        Project overview (not shipped)
 ```
