@@ -77,10 +77,59 @@ Toolbar popup and welcome page:
 - [ ] **Change** → opens the browser's shortcuts page; change the key there, reopen the popup → shows the new keys
 - [ ] Clear the shortcut on that page → popup shows "Not set", a red warning and **Set shortcut**
 
-## Publishing (optional, only if you want others to install it)
+## Publishing (so non-technical people can install it)
 
-Ask Claude to package it, and it'll produce the `.zip`. Then:
-- **Chrome Web Store**: one-time US$5 developer registration, then upload the zip in the Developer Dashboard.
-- **Edge Add-ons**: free, upload through Microsoft Partner Center.
+### Why a store
 
-Both stores also need an icon, screenshots, and a privacy description, and review takes a few days.
+Browsers only let normal users install extensions from their store. The alternatives don't work for non-technical people:
+
+- **Load unpacked** (what you do) needs Developer mode, a folder that must never move, and Edge warns about it.
+- **`.crx` files** from anywhere other than a store are blocked on Windows and macOS.
+
+A store listing gives people one **Add to Chrome / Get** button. It installs the extension, updates it automatically, and works in every Chromium browser: the Chrome Web Store also serves Brave, Opera and Vivaldi users.
+
+### 1. Build the package
+
+1. Make sure `version` in `manifest.json` is new. The first release is `1.0.0`. Every later upload needs a higher number (`1.0.1` for fixes, `1.1.0` for features), or the store rejects it.
+2. In PowerShell, in this folder:
+
+   ```powershell
+   & "$env:SystemRoot\System32\tar.exe" -a -c -f dist/qr-scanner-1.0.0.zip manifest.json background.js content.js popup.html popup.js lib icons
+   ```
+
+   This zips only the files the extension needs, with `manifest.json` at the top level. Docs and `test/` stay out. Don't use right-click → "Compress", which zips the folder itself, or `Compress-Archive`, which writes broken folder paths.
+3. Optional check: load `dist/qr-scanner-1.0.0.zip` unzipped (extract it to a new folder, then **Load unpacked**) and do a quick scan.
+
+### 2. Edge Add-ons (free)
+
+1. Sign in at [partner.microsoft.com/dashboard/microsoftedge](https://partner.microsoft.com/dashboard/microsoftedge) with a Microsoft account and register as a developer (free).
+2. **Create new extension** → upload the zip.
+3. **Availability:** *Public* (searchable) or *Hidden* (only people with the link can find it, good for sharing with friends or family).
+4. **Properties:** category *Productivity*. When asked whether it collects personal data, answer **no**. That's true: everything runs in the browser and nothing is sent anywhere.
+5. **Store listing:** description (text below), the 128px icon (`icons/128.png`, or a larger render of `icons/icon.svg` if a bigger logo is required), and screenshots. The form marks which images are required.
+6. **Publish.** Review usually takes a few business days. You get an email when it's live.
+
+### 3. Chrome Web Store (US$5 once)
+
+1. Go to [chrome.google.com/webstore/devconsole](https://chrome.google.com/webstore/devconsole), sign in with a Google account, and pay the one-time US$5 registration.
+2. **New item** → upload the zip.
+3. **Store listing:** description, category *Productivity*, language, and at least one screenshot (1280×800 or 640×400). It may also ask for a 440×280 promo tile.
+4. **Privacy practices:** fill in the answers below.
+5. **Distribution:** *Public*, or *Unlisted* (link only).
+6. **Submit for review.** It usually takes a few days, sometimes longer for a first item.
+
+### Answers for the store forms
+
+- **Short description:** Read QR codes on any webpage: scan the whole page or drag a box around a code. Works offline.
+- **Detailed description:**
+  > See a QR code on a webpage and want what's inside, without reaching for your phone? Click the QR Region Scanner icon and choose **Scan this page**, or drag a box around one code with **Scan part of page** (shortcut Alt+Shift+Q). Links open with one click, and their domain is shown first so you can see where they go. Text, Wi-Fi details and other content are shown so you can copy them. Everything happens in your browser: no account, no tracking, nothing sent anywhere.
+- **Single purpose:** Read QR codes shown on the current webpage.
+- **`activeTab` justification:** Captures the visible tab, only when the user clicks the extension or presses its shortcut, so the QR code in it can be decoded.
+- **`scripting` justification:** Injects the selection overlay and the result popup into the current tab when the user starts a scan.
+- **Remote code:** No. The QR decoder (jsQR) is bundled in the package.
+- **Data usage:** collects none of the listed data types. Check the three certifications (not sold, not used for unrelated purposes, not used for creditworthiness).
+- **Privacy policy:** the forms require one only if the extension handles user data, and this one doesn't. If a form insists, a one-line page saying "QR Region Scanner does not collect, store or transmit any data" is enough.
+
+### Updating later
+
+Change the code → bump `version` → rebuild the zip → in each store's dashboard, upload the new zip on the existing item and submit. Users get the update automatically within a day or so of approval.

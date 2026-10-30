@@ -83,7 +83,8 @@ The extension *is* this folder. There's no build; the browser runs the files as-
 - **Not automatable here:** the extension wiring (real shortcut, `captureVisibleTab`, injection). Claude can't load the extension into the user's browser, so loading, reloading, and the manual pass are the user's job, documented in `SETUP.md`. Keep that file in sync when behavior, the shortcut, or the checklist changes. After a code change, tell the user what to redo (usually: reload the extension, then reload the tab) and what to check.
 - Debugging: ask the user for the text from the extension card's **Errors** button or the page's DevTools console. Service worker logs are under "Inspect views: service worker" on the card; content script logs are in the page console.
 - Packaging for a store (only when asked): zip the shipped files only, with `manifest.json` at the zip root:
-  `Compress-Archive -Path manifest.json, background.js, content.js, popup.html, popup.js, lib, icons -DestinationPath dist/qr-scanner.zip -Force`
+  `& "$env:SystemRoot\System32\tar.exe" -a -c -f dist/qr-scanner-<version>.zip manifest.json background.js content.js popup.html popup.js lib icons`
+  Don't use `Compress-Archive`: in Windows PowerShell 5.1 it writes `lib\jsQR.js` with backslashes, which zip readers treat as a file name, not a folder. Don't use a bare `tar` from Git Bash either: that's GNU tar, which silently writes a tar file named `.zip`. Bump `version` in the manifest before every store upload; stores reject a version they already have.
 
 ## Conventions
 

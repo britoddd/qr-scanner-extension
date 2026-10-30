@@ -1,9 +1,8 @@
 {
   "manifest_version": 3,
   "name": "QR Region Scanner",
-  "version": "0.1.0",
-  "version_name": "0.1.0 alpha",
-  "description": "Drag a box over a QR code on any webpage to read it.",
+  "version": "1.0.0",
+  "description": "Read QR codes on any webpage: scan the whole page or drag a box around a code. Works offline.",
   "permissions": ["activeTab", "scripting"],
   "background": { "service_worker": "background.js" },
   "icons": { "16": "icons/16.png", "32": "icons/32.png", "48": "icons/48.png", "128": "icons/128.png" },
